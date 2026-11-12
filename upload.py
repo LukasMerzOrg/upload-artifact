@@ -125,12 +125,12 @@ def main():
     deleted = (now + datetime.timedelta(days=ttl)).strftime("%Y-%m-%d")
     print(f"Uploaded {len(files)} file(s) as s3://{inp('BUCKET')}/{key} ({_size(size)})")
     if env.get("GITHUB_STEP_SUMMARY"):
-        with open(env["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+        with open(env["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8", newline="\n") as f:
             f.write(f"**Artifact [{name}]({url})** — {_size(size)}, {len(files)} file(s). "
                     f"Link valid until {link_until}; stored in Garage as "
                     f"`{inp('BUCKET')}/{key}` until {deleted}.\n\n")
     if env.get("GITHUB_OUTPUT"):
-        with open(env["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+        with open(env["GITHUB_OUTPUT"], "a", encoding="utf-8", newline="\n") as f:
             f.write(f"artifact-url={url}\n")
     return 0
 
