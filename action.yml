@@ -1,0 +1,64 @@
+name: Upload artifact to Garage
+description: >
+  Drop-in replacement for actions/upload-artifact that stores the artifact in a
+  Garage (S3) bucket instead of GitHub's artifact storage, and links it from
+  the job summary.
+
+inputs:
+  name:
+    description: Artifact name
+    default: artifact
+  path:
+    description: File, directory or glob patterns (one per line, ! excludes)
+    required: true
+  if-no-files-found:
+    description: warn, error or ignore
+    default: warn
+  retention-days:
+    description: Days to keep the artifact (rounded up to 3, 7, 14, 30 or 90)
+    default: ""
+  compression-level:
+    description: Zip level 0-9, used when more than one file is uploaded
+    default: "6"
+  include-hidden-files:
+    description: Include files and directories starting with a dot
+    default: "false"
+  access-key-id:
+    description: Garage access key ID
+    required: true
+  secret-access-key:
+    description: Garage secret access key
+    required: true
+  endpoint:
+    description: S3 endpoint URL
+    default: https://s3.merz.tools
+  bucket:
+    description: Bucket name
+    default: github
+  region:
+    description: S3 region
+    default: garage
+
+outputs:
+  artifact-url:
+    description: Presigned download link (valid for at most 7 days)
+    value: ${{ steps.upload.outputs.artifact-url }}
+
+runs:
+  using: composite
+  steps:
+    - id: upload
+      shell: bash
+      env:
+        INPUT_NAME: ${{ inputs.name }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_IF_NO_FILES_FOUND: ${{ inputs.if-no-files-found }}
+        INPUT_RETENTION_DAYS: ${{ inputs.retention-days }}
+        INPUT_COMPRESSION_LEVEL: ${{ inputs.compression-level }}
+        INPUT_INCLUDE_HIDDEN_FILES: ${{ inputs.include-hidden-files }}
+        INPUT_ACCESS_KEY_ID: ${{ inputs.access-key-id }}
+        INPUT_SECRET_ACCESS_KEY: ${{ inputs.secret-access-key }}
+        INPUT_ENDPOINT: ${{ inputs.endpoint }}
+        INPUT_BUCKET: ${{ inputs.bucket }}
+        INPUT_REGION: ${{ inputs.region }}
+      run: python3 "$GITHUB_ACTION_PATH/upload.py"
